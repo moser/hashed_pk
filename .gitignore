@@ -1,0 +1,4 @@
+*~
+test/rails_root/log/*
+test/rails_root/tmp/*
+
