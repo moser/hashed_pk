@@ -1,1 +1,20 @@
 = Hashed primary key
+
+Obfuscates your primary key. You have to set your id column to string manually.
+
+== Usage
+
+  class Thing < ActiveRecord::Base
+    has_hashed_primary_key
+    #...
+  end
+  
+'has_hashed_primary_key' accepts 2 options:
+
+=== :hash_algorithm
+Something like
+  :hash_algorithm => lambda { |str| Digest::SHA1.hexdigest(str) }
+  
+=== :init_string
+Something like
+  :init_string => lambda { Time.now.to_s }
