@@ -1,38 +1,55 @@
 require File.dirname(__FILE__) + '/../../test/test_helper'
-
 class SecondThing < ActiveRecord::Base
   set_table_name "things"
-  has_hashed_primary_key :hash_algorithm => lambda { |str| Digest::SHA1.hexdigest(str) }
+  has_hashed_primary_key :length => 4 #max id = 2**4 - 1 = 15
 end
 
-class ThirdThing < ActiveRecord::Base
+class FourthThing < ActiveRecord::Base
   set_table_name "things"
-  has_hashed_primary_key :init_string => lambda { Time.now.to_f.to_s }
+  has_hashed_primary_key :init_string => lambda { "static" }
 end
 
 class NormTest < Test::Unit::TestCase
-  def test_should_have_long_pk
-    t = Thing.new
-    t.save
-    assert_equal Time.now.to_str, Thing.init_string
-    assert_equal 32, t.id.length
+  def setup
+    Thing.delete_all
+    HumanBeing.delete_all
   end
   
-  # well,... how to test this without time dep
   def test_should_not_create_duplicates
-    t = Thing.new
-    t2 = Thing.new
-    t.save
-    t2.save
-  end
-  
-  def test_should_use_sha1
-    t = SecondThing.new
-    t.save
-    assert_equal 40, t.id.length 
+    t = FourthThing.new
+    t2 = FourthThing.new
+    assert t.save
+    assert t2.save
+    assert t.id != t2.id
   end
   
   def test_should_use_float_as_init_string
-    assert ThirdThing.init_string.match /(0-9)*\.(0-9)*/
+    assert Thing.init_string.match /(0-9)*\.(0-9)*/
+  end
+  
+  def test_should_be_lower_than_256
+    t = SecondThing.new
+    assert t.save
+    assert t.id < 16
+  end
+  
+  def test_should_throw_error_when_out_of_ids
+    assert_raise ActiveRecord::ActiveRecordError do
+      17.times do |n|
+        t = SecondThing.new
+        t.save
+      end
+    end
+  end
+  
+  def test_should_check_collisions_on_base_class
+    assert_raise ActiveRecord::ActiveRecordError do
+      9.times do
+        juliet = Woman.new
+        juliet.save
+        romeo = Man.new
+        romeo.save
+      end
+    end
   end
 end

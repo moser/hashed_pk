@@ -1,6 +1,7 @@
 = Hashed primary key
-
-Obfuscates your primary key. You have to set your id column to string manually.
+Obfuscates your primary key by creating a SHA1 hash of a String.
+If the chosen key is already in use it will rehash it.
+The resulting keys are positive integers.
 
 == Usage
 
@@ -9,12 +10,24 @@ Obfuscates your primary key. You have to set your id column to string manually.
     #...
   end
   
-'has_hashed_primary_key' accepts 2 options:
+'has_hashed_primary_key' accepts these options:
 
-=== :hash_algorithm
-Something like
-  :hash_algorithm => lambda { |str| Digest::SHA1.hexdigest(str) }
+=== :length
+The length of your primary key in bits.
+Default: 31
+Maximum: 160 #bigger values won't hurt
+The default value suits rails' default primary key data type (32 bit signed integer).
+
   
 === :init_string
-Something like
-  :init_string => lambda { Time.now.to_s }
+A lambda exp. Its result will be hashed.
+Default: 
+  lambda { Time.now.to_f.to_s }
+
+You could use:
+  :init_string => lambda { rand(1000000) }
+
+Bad init_string values would be
+  lambda { rand(2) }
+  lambda { "static string" }
+  lambda { Time.now.to_s } #especially if you insert several rows within a short period of time
