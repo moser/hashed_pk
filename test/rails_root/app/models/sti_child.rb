@@ -1,0 +1,2 @@
+class StiChild < StiParent
+end

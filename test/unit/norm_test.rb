@@ -24,7 +24,7 @@ class NormTest < Test::Unit::TestCase
   end
   
   def test_should_use_float_as_init_string
-    assert Thing.init_string.match /(0-9)*\.(0-9)*/
+    assert Thing.calculate_init_string.match /(0-9)*\.(0-9)*/
   end
   
   def test_should_be_lower_than_256

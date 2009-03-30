@@ -15,20 +15,28 @@ module Hashed_Pk
       before_create :set_id
     end
     
-    def init_string
-      @hashed_pk_init_string.call
+    def hashed_pk_init_string
+      @hashed_pk_init_string || self.superclass.hashed_pk_init_string
+    end
+    
+    def hashed_pk_length
+      @hashed_pk_length ||self.superclass.hashed_pk_length
+    end
+    
+    def calculate_init_string
+      hashed_pk_init_string.call
     end
     
     def max_tries
       if !@hashed_pk_max_tries
-        @hashed_pk_max_tries = ((2**@hashed_pk_length) * 1.5).to_i
+        @hashed_pk_max_tries = ((2**hashed_pk_length) * 1.5).to_i
       end
       @hashed_pk_max_tries
     end
     
     def hash_n(str)
       i = Digest::SHA1.hexdigest(str).hex
-      i % (2**@hashed_pk_length)
+      i % (2**hashed_pk_length)
     end
     
   end
@@ -36,10 +44,10 @@ module Hashed_Pk
   module InstanceMethods
   protected
     def set_id
-      i = self.class.hash_n(self.class.init_string)
+      i = self.class.hash_n(self.class.calculate_init_string)
       tries = 1
       while self.class.base_class.exists?(i) do
-        i = self.class.hash_n(i.to_s + self.class.init_string)
+        i = self.class.hash_n(i.to_s + self.class.calculate_init_string)
         tries += 1
         # it 
         if tries > self.class.max_tries
